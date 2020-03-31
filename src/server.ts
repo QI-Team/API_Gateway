@@ -2,8 +2,11 @@ import * as Koa from 'koa';
 
 import logger from './middleware/logger';
 import graphQL from './middleware/graphql';
+import knex from './lib/db.mysql';
 
 const app = new Koa();
+
+knex('mysql_test');
 
 app.use(logger);
 app.use(graphQL);

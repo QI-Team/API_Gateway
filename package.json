@@ -27,7 +27,10 @@
     "@types/koa2-cors": "^2.0.1",
     "graphql": "^14.6.0",
     "graphql-server-koa": "^1.4.1",
+    "knex": "^0.20.13",
     "koa": "^2.11.0",
+    "koa-router": "^8.0.8",
+    "mysql": "^2.18.1",
     "redis": "^3.0.2"
   }
 }
