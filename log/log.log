@@ -1,4 +1,8 @@
-time: 1585636993475 - url: localhost:8889
-time: 1585636993509 - url: localhost:8889
-time: 1585637004266 - url: localhost:8889
-time: 1585637004304 - url: localhost:8889
+time: 1585643115904 - request url: /graphiql - host: localhost:8889
+time: 1585643116242 - request url: /graphql - host: localhost:8889
+time: 1585643116267 - request url: /favicon.ico - host: localhost:8889
+time: 1585643116268 - request url: /graphql - host: localhost:8889
+time: 1585643130919 - request url: /123/12345 - host: localhost:8889
+time: 1585643130994 - request url: /favicon.ico - host: localhost:8889
+time: 1585643151219 - request url: /123/12345/123 - host: localhost:8889
+time: 1585643151293 - request url: /favicon.ico - host: localhost:8889
