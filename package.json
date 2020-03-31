@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "tsc --watch -t dist/ -e dist/app.js",
+    "dev": "tsc --watch -t dist/",
     "build": "rm -rf dist/* && tsc"
   },
   "repository": {
@@ -25,6 +25,7 @@
     "@types/koa-bodyparser": "^4.3.0",
     "@types/koa-router": "^7.4.0",
     "@types/koa2-cors": "^2.0.1",
+    "koa": "^2.11.0",
     "redis": "^3.0.2"
   }
 }
