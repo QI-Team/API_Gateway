@@ -14,6 +14,7 @@ export default async function redisTest(ctx: any, next: () => Promise<any>) {
         msg: '',
       })
     } catch (e) {
+      console.error(`Error while get redis value : ${e}`);
       (ctx.body as Response)= {
         code: '1',
         info: {},
@@ -32,6 +33,7 @@ export default async function redisTest(ctx: any, next: () => Promise<any>) {
         msg: '',
       })
     } catch (e) {
+      console.error(`Error while set redis value : ${e}`);
       (ctx.body as Response)= {
         code: '1',
         info: {},
