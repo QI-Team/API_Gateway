@@ -8,9 +8,6 @@ import gql from 'graphql-tag';
  * proxy, analysis request and transmit request.
  */
 export default async function graphQL(ctx: any, next: () => Promise<any>) {
-  // interface Obj {
-  //   definitions: {operation: object}[]
-  // }
   if (ctx.request.path === '/graphql' && ctx.request.method === 'POST') {
     let { query, mutate } = ctx.request.body;
     let obj = gql`${query}`;

@@ -1,9 +1,13 @@
 import * as Knex from 'knex';
-import mysqlConfig from '../../config/db.mysql';
 
 const knex = Knex({
   client: 'mysql',
-  connection: mysqlConfig,
+  connection: {
+    host: '127.0.0.1:3306',
+    user: 'root',
+    password: '123456',
+    database: 'analysis',
+  },
   pool: {
     min: 0,
     max: 7,
