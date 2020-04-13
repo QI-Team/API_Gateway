@@ -33,7 +33,7 @@ const openFile = function (f: Function, ...args: string[]) {
 export default async function logger(ctx: any, next: () => Promise<any>) {
   console.log(`-> ${ctx.request.URL}`);
   
-  const now = new Date().getTime();
+  const now = new Date();
   const url = ctx.request.path;
   const host = ctx.request.host;
   // const remoteAddress = ctx.request.remoteAddress; // todo

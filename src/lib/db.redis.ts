@@ -1,5 +1,4 @@
 import * as redis from 'redis';
-// import { promisify } from 'util';
 
 const client = redis.createClient({
   host: "localhost",

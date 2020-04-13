@@ -8,13 +8,6 @@ const knex = Knex({
     password: '123456',
     database: 'analysis',
   },
-  pool: {
-    min: 0,
-    max: 7,
-    afterCreate: () => {
-      console.info('After created.');
-    }
-  },
   acquireConnectionTimeout: 10000,
   log: {
     warn(message) {

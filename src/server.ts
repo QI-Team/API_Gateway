@@ -1,19 +1,23 @@
 import * as Koa from 'koa';
 import * as body from 'koa-bodyparser';
+import * as cors from '@koa/cors';
 
 import logger from './middleware/logger';
 import graphQL from './middleware/graphql';
 import knex from './lib/db.mysql';
 import redisTest from './middleware/test.redis';
+import record from './middleware/record';
 
 const app = new Koa();
 
-knex('mysql_test');
+knex();
 
 app.use(logger);
+app.use(cors());
 app.use(body());
 app.use(redisTest);
 app.use(graphQL);
+app.use(record);
 app.use(async (ctx, next) => {
   ctx.body = "Hello!";
 });

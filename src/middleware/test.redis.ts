@@ -2,7 +2,7 @@ import Response from '../lib/response';
 import { rGet, rSet } from '../lib/db.redis';
 
 export default async function redisTest(ctx: any, next: () => Promise<any>) {
-  if (ctx.request.path === '/redis' && ctx.request.method === 'GET') {
+  if (ctx.request.path === '/redis/key') {
     let { key } = ctx.request.body;
 
     try {
@@ -21,7 +21,7 @@ export default async function redisTest(ctx: any, next: () => Promise<any>) {
         msg: `Error while get redis value : ${e}`,
       }
     }
-  }else if (ctx.request.path === '/redis' && ctx.request.method === 'POST') {
+  }else if (ctx.request.path === '/redis/data') {
     let { key, value } = ctx.request.body;
 
     try {
