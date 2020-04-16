@@ -4,13 +4,10 @@ import * as cors from '@koa/cors';
 
 import logger from './middleware/logger';
 import graphQL from './middleware/graphql';
-import knex from './lib/db.mysql';
 import redisTest from './middleware/test.redis';
 import record from './middleware/record';
 
 const app = new Koa();
-
-knex();
 
 app.use(logger);
 app.use(cors());
@@ -24,4 +21,4 @@ app.use(async (ctx, next) => {
 
 app.listen(process.env.PORT || 8889, () => {
   console.log("App running.");
-})
+});

@@ -1,89 +1,37 @@
-import * as Knex from 'knex';
+import { Sequelize, Dialect } from 'sequelize';
+
 import { mysqlConfig } from '../../config';
-
-function connectDB () {
-  const knex = Knex({
-    client: mysqlConfig.client,
-    connection: {
-      host: mysqlConfig.host,
-      user: mysqlConfig.user,
-      password: mysqlConfig.password,
-      database: mysqlConfig.database,
-    },
-    acquireConnectionTimeout: 10000,
-    log: {
-      warn(message) {
-        console.warn(message);
-      },
-      error(message) {
-        console.error(message);
-      },
-      deprecate(message) {
-        console.info(message);
-      },
-      debug(message) {
-        console.log(message);
-      },
-    }
-  });
-  
-  ; (async () => {
-    try {
-      let res = await knex.schema.hasTable('url_config');
-  
-      if (!res) {
-        await knex.schema.createTable('url_config', t => {
-          t.increments('id').primary();
-          t.string('key', 20);
-          t.string('url', 1024);
-          t.string('other', 150);
-          t.string('other1', 150);
-        }).then()
-      }
-    } catch (e) {
-      console.error('Error in create table: ', e);
-    }
-  })();
-
-  return knex;
-}
+import recordModel from '../lib/model';
 
 export default async function record(ctx: any, next: () => Promise<any>) {
-  let knex: any = {};
-
-  if (ctx.request.url.match(/\/record/i)) {
-    knex = connectDB();  
-  }
-  if (ctx.request.url === '/record/') {
-    try {
-      let res = await knex.select('*').from('url_config');
-
-      if (res) {
-        ctx.body = {
-          code: '0',
-          info: res,
-          msg: ''
-        }
-      } else {
-        ctx.body = {
-          code: '1',
-          info: {},
-          msg: 'no data'
-        }
+  if (ctx.request.path.match(/\/record/i)) {
+    const sequelize = new Sequelize(mysqlConfig.database,
+      mysqlConfig.user, mysqlConfig.password, {
+      host: mysqlConfig.host,
+      port: mysqlConfig.port as number,
+      dialect: mysqlConfig.client as Dialect,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
       }
+    });
 
-      await knex.destroy();
-    } catch (e) {
-      console.error('Error in getting all data: ', e);
-    }
-  }
-  if (ctx.request.url === '/record/:id') {
-    const { id } = ctx.request.body;
-
-    if (id) {
+    ; (async () => {
       try {
-        let res = await knex.select(name).from('url_config');
+        await sequelize.authenticate();
+        console.log("Connected successfully");
 
+        await recordModel.sync({ force: false });
+      } catch (e) {
+        console.error("Error in line 25: ", e);
+      }
+    })();
+
+    if (ctx.request.path === '/record' && ctx.request.method.toLowerCase() === 'get') {
+      try {
+        let res = await recordModel.findAll();
         if (res) {
           ctx.body = {
             code: '0',
@@ -97,21 +45,115 @@ export default async function record(ctx: any, next: () => Promise<any>) {
             msg: 'no data'
           }
         }
-        await knex.destroy();
       } catch (e) {
-        console.error('Error in getting one data: ', e);
+        console.error(`Error in line 75, time: ${new Date()},  getting all data: e.message`);
       }
     }
-  }
-  if (ctx.request.url === '/record/:id' && ctx.request.method.toLowerCase() === 'post') { // update
-    
-  }
-  if (ctx.request.url === '/record/' && ctx.request.method.toLowerCase() === 'put') { // create
 
-  }
-  if (ctx.request.url === '/record/:id' && ctx.request.method.toLowerCase() === 'delete') {
+    let reg = /\/[a-zA-Z0-9_]+\/[a-zA-Z0-9_]+/i;
 
-  }
+    if (reg.test(ctx.request.path) && ctx.request.method.toLowerCase() === 'get') {
+      const field = ctx.request.path.split('/')[2];
 
-  await next();
-};
+      if (field) {
+        try {
+          let res = await recordModel.findAll({
+            where: {
+              field,
+            }
+          });
+
+          ctx.body = {
+            code: '0',
+            info: res,
+            msg: ''
+          }
+        } catch (e) {
+          console.error(`Error in line 97, time: ${new Date()},  getting all data: ${e.message}`);
+        }
+      } else {
+        ctx.body = {
+          code: '1',
+          info: {},
+          msg: 'No key.'
+        }
+      }
+    }
+
+
+    if (ctx.request.path === '/record' && ctx.request.method.toLowerCase() === 'post') { // update
+      const { field, value } = ctx.request.body;
+
+      try {
+        let res = await recordModel.update({ field: value }, {
+          where: {
+            field,
+          }
+        });
+
+        ctx.body = {
+          code: '0',
+          info: res,
+          msg: ''
+        }
+      } catch (e) {
+        console.error(`Error in line 123, time: ${new Date()},  post data: ${e.message}`);
+      }
+    }
+
+
+    if (ctx.request.path === '/record' && ctx.request.method.toLowerCase() === 'put') { // create
+      const { field, value } = ctx.request.body;
+
+      try {
+        let res = await recordModel.findAll({
+          where: {
+            field,
+          }
+        });
+
+        console.log("res: ", res);
+        if (!res.length) {
+          await recordModel.create({ field, value });
+
+          ctx.body = {
+            code: '0',
+            info: {},
+            msg: 'OK',
+          }
+        } else {
+          ctx.body = {
+            code: '1',
+            info: {},
+            msg: 'Data already exists.'
+          }
+        }
+      } catch (e) {
+        console.error(`Error in line 147, time: ${new Date()},  put data: ${e.message}`);
+      }
+    }
+
+
+    if (reg.test(ctx.request.path) && ctx.request.method.toLowerCase() === 'delete') {
+      const field = ctx.request.path.split('/')[2];
+
+      try {
+        await recordModel.destroy({
+          where: {
+            field,
+          }
+        });
+        ctx.body = {
+          code: '0',
+          info: {},
+          msg: 'ok'
+        }
+      } catch (e) {
+        console.error(`Error in line 147, time: ${new Date()},  put data: ${e.message}`);
+      }
+    }
+
+  } else {
+    await next();
+  }
+}
