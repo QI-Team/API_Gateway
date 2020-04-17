@@ -82,10 +82,10 @@ export default async function record(ctx: any, next: () => Promise<any>) {
 
 
     if (ctx.request.path === '/record' && ctx.request.method.toLowerCase() === 'post') { // update
-      const { field, value } = ctx.request.body;
+      const { field, value, method } = ctx.request.body;
 
       try {
-        let res = await recordModel.update({ field: value }, {
+        let res = await recordModel.update({ field: value, method }, {
           where: {
             field,
           }
@@ -103,7 +103,7 @@ export default async function record(ctx: any, next: () => Promise<any>) {
 
 
     if (ctx.request.path === '/record' && ctx.request.method.toLowerCase() === 'put') { // create
-      const { field, value } = ctx.request.body;
+      const { field, value, method } = ctx.request.body;
 
       try {
         let res = await recordModel.findAll({
@@ -114,7 +114,7 @@ export default async function record(ctx: any, next: () => Promise<any>) {
 
         console.log("res: ", res);
         if (!res.length) {
-          await recordModel.create({ field, value });
+          await recordModel.create({ field, value, method });
 
           ctx.body = {
             code: '0',

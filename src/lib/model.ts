@@ -19,6 +19,7 @@ interface MyModel extends Model {
   readonly id: number;
   field: string,
   value: string,
+  method: string,
   tips: string,
   other: string,
 }
@@ -40,6 +41,10 @@ const recordModel = <MyModelStatic>sequelize.define('recordModel', {
     allowNull: false,
   },
   value: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  method: {
     type: DataTypes.STRING,
     allowNull: false,
   },

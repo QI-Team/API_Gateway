@@ -1,4 +1,3 @@
-import { graphqlKoa, graphiqlKoa } from 'graphql-server-koa';
 import gql from 'graphql-tag';
 import { mysqlConfig } from '../../config';
 import { request } from 'http';
@@ -68,18 +67,19 @@ export default async function graphQL(ctx: any, next: () => Promise<any>) {
           }
         });
 
-        console.log("-------res--------: ", res);
+        console.log("-------res--------: ", res.dataValues.method);
 
+        // content-length会导致Parse Error
+        delete ctx.request.headers['content-length'];
+        console.log('headers......', ctx.request.headers);
         const options = {
-          method: ctx.request.method,
+          method: 'post',
           headers: ctx.request.headers,
         }
 
         // let r = await oRequest(res.dataValues.value, options);
         if (res) {
-          let r = await oRequest(res.dataValues.value, {
-            method: 'GET'
-          });
+          let r = await oRequest(res.dataValues.value, options);
           console.log("-------------response---------:", r);
 
           response.push(r);
