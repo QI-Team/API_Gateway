@@ -5,7 +5,17 @@ import { request } from 'http';
 import { Sequelize, Dialect } from 'sequelize';
 import recordModel from '../lib/model';
 
-const oRequest = function (url: string, options: {}) {
+interface DbOperator {
+  findOne: (options: {}) => Promise<any>;
+}
+
+interface RequestOptions {
+  method: string,
+  body?: string,
+  headers: any,
+}
+
+const oRequest = function (url: string, options: RequestOptions) {
   return new Promise((resolve, reject) => {
     const req = request(url, options, res => {
       res.setEncoding('utf8');
@@ -16,9 +26,36 @@ const oRequest = function (url: string, options: {}) {
 
     req.on('error', (e) => {
       reject(e);
-    })
+    });
+    req.write(options.body);
     req.end();
   })
+}
+
+const getQuery = async function (fields: string[], db: DbOperator, options: RequestOptions): Promise<object[]> {
+  let response = [];
+
+  try {
+    for (let t of fields) {
+      let res = await db.findOne({
+        where: {
+          field: t
+        }
+      });
+
+      if (res) {
+        let r = await oRequest(res.dataValues.value, options) as string;
+
+        response.push(JSON.parse(r).info);
+      } else {
+        throw new Error(`No data in return with this field: ${res}`);
+      }
+    }
+
+    return response;
+  } catch (e) {
+    console.error("Error in line 57 with function getQuery: ", e);
+  }
 }
 
 /**
@@ -28,7 +65,7 @@ const oRequest = function (url: string, options: {}) {
  * proxy, analysis request and transmit request.
  */
 export default async function graphQL(ctx: any, next: () => Promise<any>) {
-  console.log("-----------graphql-----------: ", ctx.request.headers);
+  console.log("-----------graphql-----------: ", ctx.request.body);
   if (ctx.request.path === '/graphql' && ctx.request.method === 'POST') {
     const sequelize = new Sequelize(mysqlConfig.database,
       mysqlConfig.user, mysqlConfig.password, {
@@ -53,50 +90,32 @@ export default async function graphQL(ctx: any, next: () => Promise<any>) {
       }
     })();
 
-    let { query, mutate } = ctx.request.body;
-    let obj = gql`${query}`;
-    let fields = (obj as any).definitions[0].selectionSet.selections.map((v: object) => (v as any).name.value);
-    let response = [];
+    // content-length的长度与实际传输的大小不一致会导致Parse Error
+    delete ctx.request.headers['content-length'];
 
-    console.log('--------fields---------: ', fields);
-    try {
-      for (let t of fields) {
-        let res = await recordModel.findOne({
-          where: {
-            field: t
-          }
-        });
+    let { query, variables } = ctx.request.body;
+    let obj = {};
 
-        console.log("-------res--------: ", res.dataValues.method);
+    if (query) {
+      obj = gql`${query}`;
+      const fields = (obj as any).definitions[0].selectionSet.selections.map((v: object) => (v as any).name.value);
 
-        // content-length的长度与实际传输的大小不一致会导致Parse Error
-        delete ctx.request.headers['content-length'];
-        console.log('headers......', ctx.request.headers);
-        const options = {
-          method: 'post',
-          headers: ctx.request.headers,
-        }
-
-        // let r = await oRequest(res.dataValues.value, options);
-        if (res) {
-          let r = await oRequest(res.dataValues.value, options) as string;
-          console.log("-------------response---------:", r);
-
-          response.push(JSON.parse(r).info);
-        } else {
-          throw new Error(`No data in return with this field: ${res}`,);
-        }
+      const options = {
+        method: 'post',
+        body: JSON.stringify(variables),
+        headers: ctx.request.headers,
       }
-      console.log('operation', (obj as any).definitions[0].operation);
-      console.log('field', fields);
 
+      let response = await getQuery(fields, recordModel, options);
+
+      console.log('-------response-------', response);
       ctx.body = {
         code: '0',
         info: response,
         msg: 'ok'
       }
-    } catch (e) {
-      console.log("Error in graphql router: ", e);
+    } else {
+      throw new Error('Operator must be query or mutate!');
     }
   } else {
     await next();
