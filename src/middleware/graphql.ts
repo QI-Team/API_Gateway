@@ -69,7 +69,7 @@ export default async function graphQL(ctx: any, next: () => Promise<any>) {
 
         console.log("-------res--------: ", res.dataValues.method);
 
-        // content-length会导致Parse Error
+        // content-length的长度与实际传输的大小不一致会导致Parse Error
         delete ctx.request.headers['content-length'];
         console.log('headers......', ctx.request.headers);
         const options = {
@@ -79,10 +79,10 @@ export default async function graphQL(ctx: any, next: () => Promise<any>) {
 
         // let r = await oRequest(res.dataValues.value, options);
         if (res) {
-          let r = await oRequest(res.dataValues.value, options);
+          let r = await oRequest(res.dataValues.value, options) as string;
           console.log("-------------response---------:", r);
 
-          response.push(r);
+          response.push(JSON.parse(r).info);
         } else {
           throw new Error(`No data in return with this field: ${res}`,);
         }
