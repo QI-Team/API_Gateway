@@ -1,6 +1,11 @@
 import Response from '../lib/response';
 import { rGet, rSet } from '../lib/db.redis';
 
+// todo: 给redis存储的数据设置过期时间
+// 根据http headers的expiration time 和cache-control来判断是否使用redis中缓存的数据
+// 或者直接访问目的地址获取数据后再将其缓存
+
+
 export default async function redisTest(ctx: any, next: () => Promise<any>) {
   console.log("......redis test......", ctx.request.path);
   const reg = /\/redis\/[a-z1-9_]+/i;

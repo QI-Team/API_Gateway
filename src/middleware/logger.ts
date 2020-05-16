@@ -42,7 +42,6 @@ export default async function logger(ctx: any, next: () => Promise<any>) {
   try {
     let res = await openFile(open, resolve(__dirname, '../../log/log.log'), 'wx')();
 
-    // console.log('res', res);
     if (res === 'NOT_EXIST') {
       createReadStream(data).pipe(createWriteStream('../../log/log.log'));
     } else {
